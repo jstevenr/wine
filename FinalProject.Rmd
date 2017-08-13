@@ -4,8 +4,7 @@ subtitle: "PSTAT 131, Spring 2017"
 author: "J Steven Raquel"
 date: "June 14, 2017"
 output: 
-  pdf_document:
-    latex_engine: xelatex
+  html_document
 ---
 
 
@@ -14,7 +13,7 @@ knitr::opts_chunk$set(tidy.opts = list(width.cutoff=80),
                       tidy = TRUE, echo = TRUE)
 options(width = 80)
 
-setwd("~/Documents/School/PSTAT 131/Project")
+setwd("~/Documents/rstudio-git/wine-classification")
 
 library(class)
 library(ROCR)
