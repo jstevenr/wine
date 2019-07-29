@@ -4,7 +4,7 @@ subtitle: "PSTAT 131, Spring 2017"
 author: "J Steven Raquel"
 date: "June 14, 2017"
 output: 
-  html_document
+  github_document
 ---
 
 
@@ -12,9 +12,6 @@ output:
 knitr::opts_chunk$set(tidy.opts = list(width.cutoff=80), 
                       tidy = TRUE, echo = TRUE)
 options(width = 80)
-
-setwd("~/Documents/rstudio-git/wine-classification")
-
 library(class)
 library(ROCR)
 library(randomForest)
@@ -139,7 +136,7 @@ summary(tree)
 So we can see from this summary, that in fact 6 out of the 8 predictors were used in constructing this tree: `alcohol`, `volatile.acidity`, `free.sulfur.dioxide`, `sulphates`, `citric.acid`, and `fixed.acidity`. 
 Now we are actually going to plot the tree to visualize this. 
 
-```{r plot decision tree}
+```{r plot_decision_tree}
 plot(tree, type = "uniform")
 text(tree, pretty = 0, cex = 1, col = "red")
 title("Classification Tree (Before Pruning)")
@@ -172,7 +169,7 @@ With an accuracy rate of `0.748`, this decision tree model is not superb, but wi
 
 As an alternative metric to quantify the robustness of this method, we can use the Receiver Operating Characteristic (ROC) curve and the area underneath it (AUC). The ROC curve plots the false positive rate against the true positive rate, and the area underneath it falls between either 0.5 or 1, 0.5 being the worst (random classification), and 1 being the best (perfect classification). 
 
-```{r ROC curve of tree}
+```{r ROC_curve_of_tree}
 # library(ROCR) is loaded
 # getting matrix of predicted class probabilities
 all_tree_probs <- as.data.frame(predict(tree, test, type = "vector"))
@@ -208,7 +205,7 @@ The idea of cross-validation is that it will sample multiple times from the trai
 
 Cross validation will help us find the optimal size for the tree (in terms of number of nodes). We can plot the size against misclassification error to visualize this as well. 
 
-```{r cross validation of tree}
+```{r cross_validation_of_tree}
 set.seed(10)
 # 10-fold CV (k = 10)
 # library(tree) is loaded
@@ -231,7 +228,7 @@ best.cv
 So we see, after running cross-validation, we see that we should prune the tree so that it has only 7 nodes. With this knowledge we can prune the tree and run the same diagnostics on it that we did on the unpruned model to see if any improvements are apparent. 
 
 
-```{r pruning the tree}
+```{r pruning_the_tree}
 tree.pruned <- prune.tree(tree, best = best.cv, 
                           method = "misclass")
 summary(tree.pruned)
@@ -261,7 +258,7 @@ We see that pruning the tree didn't actually really improve the accuracy rate of
 
 The original model being rather complex with as many as 6 predictors runs the risk of over-fitting, which is to say that the data follows the training data too closely and cannot be well generalized to new data. This is why we are inclined to favor a simpler model such as that we found after pruning with cross-validation.
 
-```{r ROC curve of pruned tree and AUC}
+```{r ROC_curve_of_pruned_tree_and_AUC}
 # ROC Curve with tree object
 # getting matrix of predicted class probabilities
 all_pruned_probs <- as.data.frame(predict(tree.pruned, test, type = "vector"))
@@ -317,7 +314,7 @@ knn_err
 
 So, using 10 nearest neighbors was just a random estimate, and it ended up with another mediocre accuracy rate ($0.765$) but we can look at the area under the ROC curve (AUC) and look at the strength of the test relative to the methods we have tried so far. 
 
-```{r ROC for knn}
+```{r ROC_for_knn}
 # Creating the ROC curve for knn
 # library(dplyr) is loaded
 knn_prob <- attr(knn_pred, "prob")
@@ -342,7 +339,7 @@ records
 
 So with an AUC of $0.679$, this test is not very good. We can look at different values for $k$ and try to find the best one to use and then compare the results from that with these.
 
-```{r plotting k vs accs}
+```{r plotting_k_vs_accs}
 set.seed(10)
 # library 'class' is loaded
 range <- 1:50
@@ -366,7 +363,7 @@ This is interesting because accuracy seems to follow a slight negative trend but
 
 Here is the ROC curve demonstrating this.
 
-```{r "worst kNN k = 1"}
+```{r "worst_kNN_k=1"}
 worst_knn_pred <- knn(train = train[,-9], 
                 test = test[,-9], 
                 cl = train$label, 
@@ -386,7 +383,7 @@ abline(0,1)
 
 So we think better not to opt for $k=1$ and rather choose some $k$ like 35, which is still decently accurate, and probably less biased.
 
-```{r "knn with k=35"}
+```{r "knn_with_k=35"}
 # library(knn) is loaded
 new_knn_pred <- knn(train = train[,-9], 
                 test = test[,-9], 
@@ -407,7 +404,7 @@ new_knn_err
 
 Using $k=35$ gives a slight increase in test accuracy relative to $k=10$, although it is not very significant. Now let's look at the ROC curve and the AUC to make our final comparison, both with the $k=10$ model, and the decision trees.
 
-```{r "ROC for knn k=35"}
+```{r "ROC_for_knn_k=35"}
 # Creating the ROC curve for knn
 # library(dplyr) is loaded
 new_knn_prob <- attr(new_knn_pred, "prob")
@@ -440,7 +437,7 @@ Finally we can move on to the final method of classification, randomForest.
 
 randomForest is similar to the decision tree method in that it builds trees, hence the name 'random Forest'. This is an ensemble learning method which creates a multitude of decision trees, and outputting the class that occurs most frequently among them. The advantage that randomForest has over decision trees is the element of randomness which guards against the pitfall of overfitting that decision trees run into on their own.
 
-```{r create randomForest}
+```{r create_randomForest}
 ### Random Forest
 # using all 8 predictor attributes, on the training set
 rf <- randomForest(formula = label ~ .,
@@ -448,7 +445,7 @@ rf <- randomForest(formula = label ~ .,
                    mtry = 8)
 
 print(rf)
-
+# Variable Importance Plot
 varImpPlot(rf, main = "Variable Importance Plot")
 
 ```
@@ -474,7 +471,7 @@ With an accuracy rate of `0.823`, this randomForest model is looking pretty good
 
 Let's take a look at the ROC curve and the area underneath it. 
 
-```{r ROC for randomForest}
+```{r ROC_randomForest}
 # Building the ROC Curve
 rf_pred <- as.data.frame(predict(rf, newdata = test, type = 'prob'))
 rf_pred_probs <- rf_pred[,2]
@@ -507,7 +504,7 @@ We have established by now that simpler models have a reduced bias and complexit
 
 The question here is whether or not making the model simpler is worthwhile, but we can build the simple model and compare their metrics to find out.
 
-```{r smaller randomForest with ROC and AUC}
+```{r smaller_randomForest}
 rf2 <- randomForest(formula = label ~ alcohol + volatile.acidity + free.sulfur.dioxide,
                    data = train,
                    mtry = 3)
